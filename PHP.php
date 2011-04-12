@@ -33,12 +33,12 @@ class Gettext_PHP extends Gettext
     /**
      * First magic word in the MO header
      */
-    const MAGIC1 = 0xde120495;
+    const MAGIC1 = "\xde\x12\x04\x95";
 
     /**
-     * First magic word in the MO header
+     * Second magic word in the MO header
      */
-    const MAGIC2 = 0x950412de;
+    const MAGIC2 = "\x95\x04\x12\xde";
 
     protected $mofile;
     protected $translationTable = array();
@@ -68,11 +68,12 @@ class Gettext_PHP extends Gettext
      */
     private function parseHeader($fp)
     {
-        $data   = fread($fp, 8);
-        $header = unpack("lmagic/lrevision", $data);
-
-        if ((int) self::MAGIC1 != $header['magic']
-           && (int) self::MAGIC2 != $header['magic']) {
+        $magic   = fread($fp, 4);
+        $data   = fread($fp, 4);
+        $header = unpack("lrevision", $data);
+        
+        if (self::MAGIC1 != $magic
+           && self::MAGIC2 != $magic) {
             return null;
         }
 
@@ -87,7 +88,7 @@ class Gettext_PHP extends Gettext
     }
 
     /**
-     * Parse and reutnrs the string offsets in a a table. Two table can be found in
+     * Parse and returns the string offsets in a a table. Two table can be found in
      * a mo file. The table with the translations and the table with the original
      * strings. Both contain offsets to the strings in the file.
      *
